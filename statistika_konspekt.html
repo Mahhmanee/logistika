@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Štatistika – Konšpekt</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --card: #13161e;
+    --card2: #181c27;
+    --border: #252a38;
+    --accent: #4f8ef7;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #f472b6;
+    --accent5: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code: #1e2433;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 48px 20px 36px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 200px;
+    background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* NAV TABS */
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 24px 0;
+    padding: 0 20px;
+  }
+  .nav button {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .nav button:hover { border-color: var(--accent); color: var(--accent); }
+  .nav button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* SECTIONS */
+  .section { display: none; max-width: 900px; margin: 0 auto; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* CARDS GRID */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #2d3448; }
+  .card .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .card .value { font-size: 0.88rem; color: #94a3b8; line-height: 1.5; }
+  .card .formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--code);
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin-top: 8px;
+    color: var(--accent3);
+    border-left: 3px solid var(--accent3);
+  }
+
+  .c-blue .label { color: var(--accent); }
+  .c-purple .label { color: var(--accent2); }
+  .c-green .label { color: var(--accent3); }
+  .c-pink .label { color: var(--accent4); }
+  .c-yellow .label { color: var(--accent5); }
+
+  /* BIG CARD */
+  .big-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .big-card h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 12px; }
+  .tbl th {
+    background: var(--card2);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    padding: 9px 12px;
+    text-align: left;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: #94a3b8;
+    vertical-align: top;
+  }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: rgba(255,255,255,0.02); }
+  .tbl .name { color: var(--text); font-weight: 500; }
+  .tbl .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .par { background: rgba(79,142,247,0.15); color: var(--accent); }
+  .npar { background: rgba(52,211,153,0.15); color: var(--accent3); }
+
+  /* RULE BLOCK */
+  .rule {
+    background: var(--code);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--accent2);
+    color: var(--accent2);
+    line-height: 1.7;
+  }
+
+  /* ALERT */
+  .alert {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .alert-blue { background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.25); }
+  .alert-green { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25); }
+  .alert-yellow { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); }
+  .alert-pink { background: rgba(244,114,182,0.08); border: 1px solid rgba(244,114,182,0.25); }
+  .alert .ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .alert .content { color: #94a3b8; line-height: 1.5; }
+  .alert .content strong { color: var(--text); }
+
+  /* BADGE ROW */
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .badge-b { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
+  .badge-p { background: rgba(167,139,250,0.15); color: var(--accent2); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-g { background: rgba(52,211,153,0.15); color: var(--accent3); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-y { background: rgba(251,191,36,0.15); color: var(--accent5); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-pk { background: rgba(244,114,182,0.15); color: var(--accent4); border: 1px solid rgba(244,114,182,0.3); }
+
+  /* DIVIDER */
+  .div { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* LIST */
+  .ulist { list-style: none; padding: 0; }
+  .ulist li {
+    padding: 7px 0 7px 20px;
+    position: relative;
+    color: #94a3b8;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ulist li::before {
+    content: '›';
+    position: absolute; left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ulist li strong { color: var(--text); }
+
+  /* FORMULA GRID */
+  .fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .fcard {
+    background: var(--code);
+    border-radius: 8px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .fcard .fname { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+  .fcard .fval {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--accent3);
+  }
+
+  /* CORRELATION SCALE */
+  .corr-scale {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    text-align: center;
+  }
+  .corr-scale div {
+    flex: 1;
+    padding: 10px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .corr-scale .cv { font-size: 0.62rem; color: rgba(255,255,255,0.5); }
+
+  @media (max-width: 600px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ŠTATISTIKA</h1>
+  <p>Kompletný konšpekt · všetko čo treba vedieť</p>
+</div>
+
+<nav class="nav">
+  <button class="active" onclick="show('s1',this)">01 · Základy</button>
+  <button onclick="show('s2',this)">02 · Miery</button>
+  <button onclick="show('s3',this)">03 · Intervaly</button>
+  <button onclick="show('s4',this)">04 · Testy</button>
+  <button onclick="show('s5',this)">05 · ANOVA</button>
+  <button onclick="show('s6',this)">06 · Regres./Korel.</button>
+  <button onclick="show('s7',this)">07 · Časové rady</button>
+  <button onclick="show('s8',this)">08 · Pravdepodobnosť</button>
+</nav>
+
+<!-- ═══════════════════════════════ SECTION 1 ═══════════════════════════ -->
+<section class="section active" id="s1">
+  <div class="sec-title"><span class="dot"></span>ZÁKLADNÉ POJMY A DÁTA</div>
+
+  <div class="alert alert-blue">
+    <span class="ico">📖</span>
+    <div class="content"><strong>Štatistika</strong> — veda o metódach kvantitatívneho hodnotenia vlastností hromadných javov.<br>
+    <strong>Hromadný náhodný jav</strong> — jav, ktorý sa opakuje a skladá sa z veľkého počtu prvkov.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="big-card">
+      <h3 style="color:var(--accent4)">KVALITATÍVNE premenné</h3>
+      <ul class="ulist">
+        <li>Vyjadrujú sa <strong>slovom</strong> alebo definíciou</li>
+        <li><strong>Dichotomické</strong> — 2 kategórie (áno/nie)</li>
+        <li><strong>Polynomické</strong> — viac kategórií</li>
+        <li>Príklady: národnosť, povolanie, farba</li>
+      </ul>
+    </div>
+    <div class="big-card">
+      <h3 style="color:var(--accent3)">KVANTITATÍVNE premenné</h3>
+      <ul class="ulist">
+        <li>Vyjadrujú sa <strong>číselne</strong></li>
+        <li><strong>Diskrétne</strong> — konečný počet hodnôt</li>
+        <li><strong>Spojité</strong> — nekonečný počet hodnôt v intervale</li>
+        <li>Príklady: výška, hmotnosť, vek</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="big-card">
+    <h3 style="color:var(--accent)">FREKVENČNÁ TABUĽKA (tabuľka početností)</h3>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px">Ukazuje, koľkokrát sa jednotlivé hodnoty vyskytujú v súbore.</p>
+    <table class="tbl">
+      <tr><th>Symbol</th><th>Názov</th><th>Vzorec / popis</th></tr>
+      <tr><td class="name">n</td><td>Celkový počet hodnôt</td><td>—</td></tr>
+      <tr><td class="name">nᵢ</td><td>Absolútna početnosť</td><td>počet výskytov hodnoty i</td></tr>
+      <tr><td class="name">fᵢ</td><td>Relatívna početnosť</td><td>fᵢ = nᵢ / n</td></tr>
+      <tr><td class="name">Nᵢ</td><td>Kumulatívna početnosť</td><td>súčet nᵢ od začiatku po i</td></tr>
+      <tr><td class="name">Fᵢ</td><td>Kumulatívna relatívna</td><td>Fᵢ = Nᵢ / n</td></tr>
+    </table>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>GRAFY</div>
+  <div class="grid">
+    <div class="card c-blue">
+      <div class="label">HISTOGRAM</div>
+      <div class="value">Stĺpcový diagram. Základňa = šírka intervalu, výška = početnosť hodnôt v intervale.</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">POLYGÓN</div>
+      <div class="value">Spojnicový graf — spája stredy intervalov a ich početnosti.</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">BOXPLOT</div>
+      <div class="value">Zobrazuje kvartily, rozsah a odľahlé hodnoty. Slúži na porovnanie rozdelení medzi skupinami.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>ZÁKLADNÝ vs. VÝBEROVÝ SÚBOR</div>
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">ZÁKLADNÝ SÚBOR</div>
+      <div class="value">Súbor <strong>všetkých</strong> štatistických jednotiek (populácia).</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">VÝBEROVÝ SÚBOR</div>
+      <div class="value">Vybrané jednotky — <strong>reprezentatívna podmnožina</strong> základného súboru.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>TYPY ŠTATISTIKY</div>
+  <div class="grid-2">
+    <div class="card c-yellow">
+      <div class="label">DESKRIPTÍVNA</div>
+      <div class="value">Opisuje, triedi, sumarizuje dáta pomocou tabuliek, grafov a číselných charakteristík.<br><br>
+      Ukazovatele: <strong>poloha</strong> (priemer, medián), <strong>variabilita</strong> (rozptyl), <strong>tvar</strong> (šikmosť, špicatosť).</div>
+    </div>
+    <div class="card c-pink">
+      <div class="label">INFERENČNÁ</div>
+      <div class="value">Skúma výberový súbor a robí <strong>závery o základnom súbore</strong>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 2 ═══════════════════════════ -->
+<section class="section" id="s2">
+  <div class="sec-title"><span class="dot"></span>MIERY POLOHY (Stredné hodnoty)</div>
+
+  <div class="grid">
+    <div class="card c-blue">
+      <div class="label">ARITMETICKÝ PRIEMER</div>
+      <div class="value">Základná stredná hodnota. Rovnocenne berie do úvahy všetky údaje.</div>
+      <div class="formula">x̄ = (Σxᵢ) / n</div>
+      <div class="value" style="margin-top:8px;font-size:0.78rem">⚠️ Citlivý na extrémy!</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">HARMONICKÝ PRIEMER</div>
+      <div class="value">Podiel počtu pozorovaní a súčtu prevrátených hodnôt.</div>
+      <div class="formula">H = n / Σ(1/xᵢ)</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">GEOMETRICKÝ PRIEMER</div>
+      <div class="value">Používa sa pri časových radoch — napr. rast objemu produkcie.</div>
+      <div class="formula">G = ⁿ√(x₁ · x₂ · ... · xₙ)</div>
+    </div>
+    <div class="card c-yellow">
+      <div class="label">MODUS (Mo)</div>
+      <div class="value">Hodnota, ktorá sa vyskytuje <strong>najčastejšie</strong>.</div>
+      <div class="formula">Mo = A + (d₁/(d₁+d₂)) · c</div>
+    </div>
+    <div class="card c-pink">
+      <div class="label">MEDIÁN (Q2)</div>
+      <div class="value">Stredná hodnota usporadeného radu. Polovica hodnôt je menšia, polovica väčšia.</div>
+      <div class="formula">x &lt; Medián &lt; X</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>KVANTILY</div>
+
+  <table class="tbl">
+    <tr><th>Symbol</th><th>Názov</th><th>Popis</th></tr>
+    <tr><td class="name">x₀,₅₀</td><td>Medián (Q2)</td><td>Delí súbor na 2 rovnaké časti</td></tr>
+    <tr><td class="name">x₀,₂₅</td><td>Dolný kvartil (Q1)</td><td>25 % hodnôt je nižších</td></tr>
+    <tr><td class="name">x₀,₇₅</td><td>Horný kvartil (Q3)</td><td>75 % hodnôt je nižších</td></tr>
+    <tr><td class="name">x₀,₁₂₅</td><td>Dolný oktil (ED)</td><td>—</td></tr>
+    <tr><td class="name">x₀,₈₇₅</td><td>Horný oktil (EH)</td><td>—</td></tr>
+    <tr><td class="name">x₀,₁ / x₀,₉</td><td>Decily</td><td>Delia súbor na 10 častí</td></tr>
+    <tr><td class="name">x₀,₀₁ / x₀,₉₉</td><td>Percentily</td><td>Delia súbor na 100 častí</td></tr>
+  </table>
+
+  <div class="alert alert-green">
+    <span class="ico">📦</span>
+    <div class="content">
+      <strong>IQR (Medzikvartilové rozpätie)</strong> = Q3 − Q1 = Kvartilová odchýlka<br>
+      Malý IQR → stredných 50 % dát je <strong>koncentrovaných</strong><br>
+      Veľký IQR → stredných 50 % dát je <strong>rozptýlených</strong>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>MIERY VARIABILITY</div>
+
+  <div class="grid">
+    <div class="card c-blue">
+      <div class="label">VARIAČNÉ ROZPÄTIE</div>
+      <div class="value">Rozdiel medzi max a min hodnotou. Najjednoduchšia miera variability.</div>
+      <div class="formula">R = Xmax − Xmin</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">ROZPTYL (σ²)</div>
+      <div class="value">Stredná hodnota štvorcov odchýlok od aritmetického priemeru.</div>
+      <div class="formula">σ² = Σ(xᵢ − x̄)² / n</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">SMERODAJNÁ ODCHÝLKA (σ)</div>
+      <div class="value">Priemerná vzdialenosť hodnôt od priemeru. Odmocnina z rozptylu.</div>
+      <div class="formula">σ = √σ²</div>
+    </div>
+    <div class="card c-yellow">
+      <div class="label">PRIEMERNÁ ODCHÝLKA</div>
+      <div class="value">O koľko sa hodnoty v priemere odchyľujú od aritmetického priemeru.</div>
+      <div class="formula">d̄ = Σ|xᵢ − x̄| / n</div>
+    </div>
+    <div class="card c-pink">
+      <div class="label">KOEFICIENT VARIÁCIE</div>
+      <div class="value">Relatívna miera variability. Používa sa, keď je priemer kladný > 0.</div>
+      <div class="formula">CV = (σ / x̄) · 100 %</div>
+    </div>
+  </div>
+
+  <div class="alert alert-yellow">
+    <span class="ico">⚠️</span>
+    <div class="content"><strong>Variabilita:</strong> čím väčšia, tým <strong>menej reprezentatívna</strong> je charakteristika polohy.</div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>TVAR ROZDELENIA</div>
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">ŠIKMOSŤ</div>
+      <div class="value">Vyjadruje <strong>nesúmernosť</strong> rozdelenia početností okolo priemeru.<br><br>
+      + kladná → chvost vpravo<br>
+      − záporná → chvost vľavo</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">ŠPICATOSŤ</div>
+      <div class="value">Vyjadruje <strong>koncentráciu</strong> rozdelenia okolo hodnoty znaku.<br><br>
+      Vysoká → úzky vrchol<br>
+      Nízka → plochý vrchol</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 3 ═══════════════════════════ -->
+<section class="section" id="s3">
+  <div class="sec-title"><span class="dot"></span>ODHADY PARAMETROV</div>
+
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">BODOVÝ ODHAD</div>
+      <div class="value">Konkrétna hodnota použitá na odhadovanie neznámeho parametra.</div>
+      <div class="formula">μ → x̄ (výberový priemer)<br>σ² → s² (výberový rozptyl)</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">INTERVALOVÝ ODHAD</div>
+      <div class="value">Číselný interval, v ktorom sa parameter nachádza s pravdepodobnosťou blízkou 1.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>4 TYPY INTERVALOV SPOĽAHLIVOSTI</div>
+
+  <table class="tbl">
+    <tr><th>Typ</th><th>Podmienka</th><th>Rozdelenie</th></tr>
+    <tr>
+      <td class="name">Pre μ, σ² <strong>ZNÁME</strong></td>
+      <td>Veľký výber n &gt; 30</td>
+      <td>Gaussovo normálne (z / u)</td>
+    </tr>
+    <tr>
+      <td class="name">Pre μ, σ² <strong>NEZNÁME</strong></td>
+      <td>Malý výber n &lt; 30</td>
+      <td>Studentovo (t) rozdelenie</td>
+    </tr>
+    <tr>
+      <td class="name">Pre σ², μ neznáme</td>
+      <td>Nepoznám priemer základného súboru</td>
+      <td>χ²-rozdelenie</td>
+    </tr>
+    <tr>
+      <td class="name">Pre podiel p</td>
+      <td>Odhadujeme % jednotiek s vlastnosťou</td>
+      <td>p̂ = k/n</td>
+    </tr>
+  </table>
+
+  <div class="alert alert-blue">
+    <span class="ico">ℹ️</span>
+    <div class="content">
+      <strong>Hladina významnosti α:</strong><br>
+      Nižšia α → <strong>širší</strong> interval, ale spoľahlivejší<br>
+      Vyššia α → <strong>užší</strong> interval, ale väčšie riziko chyby
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 4 ═══════════════════════════ -->
+<section class="section" id="s4">
+  <div class="sec-title"><span class="dot"></span>HYPOTÉZY A ROZHODOVANIE</div>
+
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">H₀ – NULOVÁ HYPOTÉZA</div>
+      <div class="value">Tvrdí, že medzi skúmanými javmi <strong>nie je rozdiel</strong>.</div>
+    </div>
+    <div class="card c-pink">
+      <div class="label">H₁ – ALTERNATÍVNA HYPOTÉZA</div>
+      <div class="value">Tvrdí, že medzi skúmanými javmi <strong>rozdiel existuje</strong>.</div>
+    </div>
+  </div>
+
+  <div class="rule">
+    Ak  p &lt; α  →  H₀ <strong>ZAMIETAME</strong> ✗<br>
+    Ak  p &gt; α  →  H₀ <strong>NEZAMIETAME</strong> ✓
+  </div>
+
+  <div class="grid-2">
+    <div class="card c-yellow">
+      <div class="label">CHYBA I. DRUHU</div>
+      <div class="value">Odmietnutie <strong>pravdivej</strong> H₀. (False positive)</div>
+    </div>
+    <div class="card c-pink">
+      <div class="label">CHYBA II. DRUHU</div>
+      <div class="value">Neodmietnutie <strong>nepravdivej</strong> H₀. (False negative)</div>
+    </div>
+  </div>
+
+  <div class="alert alert-green">
+    <span class="ico">📌</span>
+    <div class="content">
+      <strong>P-hodnota</strong> — najmenšia hladina významnosti, pri ktorej by sme ešte zamietli H₀.<br>
+      <strong>Testovacia štatistika</strong> — vypočítaná zo vzorky, porovnáva sa s kritickou hodnotou.<br>
+      <strong>Kritická hodnota</strong> — hranica kritického oboru.
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>PREHĽAD TESTOV</div>
+
+  <table class="tbl">
+    <tr><th>Test</th><th>Typ</th><th>Na čo sa používa</th></tr>
+    <tr>
+      <td class="name">Jednovzorkový T-test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Porovnáva priemer 1 skupiny s hypotetickou hodnotou μ₀</td>
+    </tr>
+    <tr>
+      <td class="name">Dvojvzorkový T-test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Porovnáva priemery 2 nezávislých skupín. Neznámy rozptyl, malý výber.</td>
+    </tr>
+    <tr>
+      <td class="name">Párový T-test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Porovnáva priemery 2 závislých skupín (meranie pred/po)</td>
+    </tr>
+    <tr>
+      <td class="name">Z-test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Testuje priemer, keď máme σ alebo σ², alebo veľký výber</td>
+    </tr>
+    <tr>
+      <td class="name">F-test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Porovnáva variabilitu a rozptyl medzi/vo vnútri skupín</td>
+    </tr>
+    <tr>
+      <td class="name">Chi-kvadrát test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Testuje vzťah medzi 2 kategóriovými premennými. Interval pre σ².</td>
+    </tr>
+    <tr>
+      <td class="name">Wilcoxonov test</td>
+      <td><span class="tag npar">NEPARAM</span></td>
+      <td>Alternatíva Párového T-testu. 2 závislé výbery. Porovnáva výsledky pred/po zásahu.</td>
+    </tr>
+    <tr>
+      <td class="name">U-test (Mann-Whitney)</td>
+      <td><span class="tag npar">NEPARAM</span></td>
+      <td>Alternatíva dvojvzorkového T-testu. 2 nezávislé skupiny.</td>
+    </tr>
+    <tr>
+      <td class="name">Dixonov test</td>
+      <td><span class="tag npar">NEPARAM</span></td>
+      <td>Detekcia odľahlých hodnôt. Vyžaduje variačný rad.</td>
+    </tr>
+    <tr>
+      <td class="name">Grubbsov test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Testuje, či je Xmin alebo Xmax extrémna hodnota (odlišná od ostatných).</td>
+    </tr>
+    <tr>
+      <td class="name">Leveneov test</td>
+      <td><span class="tag par">PARAM</span></td>
+      <td>Overenie zhodnosti rozptylov (pred ANOVA).</td>
+    </tr>
+  </table>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>TESTY NORMALITY</div>
+  <div class="grid">
+    <div class="card c-blue">
+      <div class="label">SHAPIRO-WILK</div>
+      <div class="value">Overuje, či dáta majú normálne rozdelenie.</div>
+      <div class="formula">W blízko 1 = normálne rozdelenie ✓</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">JARQUE-BERA</div>
+      <div class="value">Overuje normalitu cez šikmosť a špicatosť, potom p-hodnotou.</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">χ² (PEARSONOV) TEST</div>
+      <div class="value">Porovnáva skutočné a očakávané počty. Testuje zhodu empirického a teoretického rozdelenia cez <strong>frekvencie</strong>.</div>
+    </div>
+    <div class="card c-yellow">
+      <div class="label">K-S TEST</div>
+      <div class="value">Testuje zhodu empirického a teoretického rozdelenia cez <strong>distribúcie</strong>. Max rozdiel kumulatívnych početností.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 5 ═══════════════════════════ -->
+<section class="section" id="s5">
+  <div class="sec-title"><span class="dot"></span>ANOVA – Analýza rozptylu</div>
+
+  <div class="alert alert-blue">
+    <span class="ico">📊</span>
+    <div class="content">
+      <strong>ANOVA</strong> — štatistická metóda porovnávania priemerov <strong>3 a viac skupín</strong>.<br>
+      H₀: μ₁ = μ₂ = μ₃ = ... = μₘ<br>
+      H₁: μᵢ ≠ μ pre aspoň jedno i
+    </div>
+  </div>
+
+  <div class="big-card">
+    <h3 style="color:var(--accent4)">PODMIENKY PRE ANOVA</h3>
+    <ul class="ulist">
+      <li><strong>Normálne rozdelenie</strong> dát v každej skupine</li>
+      <li><strong>Nezávislosť</strong> pozorovaní</li>
+      <li><strong>Zhodnosť rozptylov</strong> (testuje Leveneov test)</li>
+    </ul>
+  </div>
+
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">JEDNOFAKTOROVÁ ANOVA</div>
+      <div class="value">Porovnáva skupiny podľa <strong>jedného faktora</strong>.<br>Napr.: typ školy</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">DVOJFAKTOROVÁ ANOVA</div>
+      <div class="value">Skúma súčasne <strong>dva faktory</strong>.<br>Napr.: typ školy + lokalita</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>STUPNE VOĽNOSTI (df)</div>
+
+  <table class="tbl">
+    <tr><th>Zložka</th><th>Skratka</th><th>df</th></tr>
+    <tr><td class="name">Medzi skupinami</td><td>SSB (SA)</td><td>k − 1</td></tr>
+    <tr><td class="name">V rámci skupín</td><td>SSW (SE)</td><td>n − k</td></tr>
+    <tr><td class="name">Celkom</td><td>SST (ST)</td><td>n − 1</td></tr>
+  </table>
+
+  <div class="alert alert-yellow">
+    <span class="ico">💡</span>
+    <div class="content">
+      <strong>Post-hoc testy</strong> — používajú sa po ANOVA, pretože ANOVA neukáže, <strong>ktoré skupiny</strong> sa líšia.<br>
+      Najčastejší: <strong>Tukeyho HSD</strong>
+    </div>
+  </div>
+
+  <div class="card c-green" style="margin-top:12px">
+    <div class="label">KRUSKAL-WALLISOV TEST</div>
+    <div class="value">Neparametrická alternatíva jednofaktorovej ANOVA. Porovnáva 3 a viac <strong>nezávislých</strong> skupín.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 6 ═══════════════════════════ -->
+<section class="section" id="s6">
+  <div class="sec-title"><span class="dot"></span>KORELÁCIA</div>
+
+  <div class="big-card">
+    <h3 style="color:var(--accent)">PEARSONOV KOEFICIENT KORELÁCIE (r)</h3>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px">Meria <strong>lineárnu závislosť</strong> kvantitatívnych premenných. Hodnota medzi −1 a 1.</p>
+
+    <div class="corr-scale">
+      <div style="background:rgba(244,114,182,0.3)"><div>−1</div><div class="cv">dokonalá záporná</div></div>
+      <div style="background:rgba(244,114,182,0.2)"><div>−0.9</div><div class="cv">veľmi silná −</div></div>
+      <div style="background:rgba(251,191,36,0.15)"><div>−0.5</div><div class="cv">stredná −</div></div>
+      <div style="background:rgba(100,116,139,0.2)"><div>0</div><div class="cv">žiadna</div></div>
+      <div style="background:rgba(52,211,153,0.15)"><div>+0.5</div><div class="cv">stredná +</div></div>
+      <div style="background:rgba(52,211,153,0.2)"><div>+0.9</div><div class="cv">veľmi silná +</div></div>
+      <div style="background:rgba(52,211,153,0.3)"><div>+1</div><div class="cv">dokonalá kladná</div></div>
+    </div>
+
+    <table class="tbl">
+      <tr><th>Rozsah |r|</th><th>Interpretácia</th></tr>
+      <tr><td>0.0 – 0.2</td><td>Veľmi slabá závislosť</td></tr>
+      <tr><td>0.2 – 0.5</td><td>Slabá závislosť</td></tr>
+      <tr><td>0.5 – 0.7</td><td>Stredná závislosť</td></tr>
+      <tr><td>0.7 – 0.9</td><td>Silná závislosť</td></tr>
+      <tr><td>0.9 – 1.0</td><td>Veľmi silná závislosť</td></tr>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">PEARSONOV r</div>
+      <div class="value">Lineárna závislosť <strong>kvantitatívnych</strong> premenných.</div>
+      <div class="formula">r &gt; 0 → kladná (x↑, y↑)<br>r &lt; 0 → záporná (x↑, y↓)<br>r = 0 → žiadna závislosť</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">SPEARMANOV rₛ</div>
+      <div class="value">Pre <strong>poradie</strong> — neparametrická alternatíva.</div>
+    </div>
+  </div>
+
+  <div class="card c-green" style="margin-top:10px">
+    <div class="label">KOVARIANCIA</div>
+    <div class="value">Ukazuje, či 2 premenné sa menia spolu. Určuje <strong>smer</strong> vzťahu (nie silu).<br>
+    Kladná → rastú spolu. Záporná → jedna rastie, druhá klesá.</div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>REGRESIA</div>
+
+  <div class="alert alert-blue">
+    <span class="ico">📈</span>
+    <div class="content">
+      <strong>Regresia</strong> — závislosť 1 premennej od 1 alebo viacerých iných premenných. Slúži na <strong>predikciu</strong>.<br>
+      <strong>Jednoduchá</strong> — 1 závislá, 1 nezávislá<br>
+      <strong>Viacnásobná</strong> — 1 závislá, viac nezávislých<br>
+      Typy: lineárna, kvadratická, logaritmická
+    </div>
+  </div>
+
+  <div class="fgrid">
+    <div class="fcard">
+      <div class="fname">SKLON (β₁)</div>
+      <div class="fval">o koľko sa zmení y, keď sa x zvýši o 1 jednotku</div>
+    </div>
+    <div class="fcard">
+      <div class="fname">INTERCEPT (β₀)</div>
+      <div class="fval">priesečník regresnej priamky s osou y (keď x = 0)</div>
+    </div>
+    <div class="fcard">
+      <div class="fname">REZÍDUUM</div>
+      <div class="fval">náhodná odchýlka pozorovania od odhadnutej hodnoty modelu</div>
+    </div>
+    <div class="fcard">
+      <div class="fname">R² (Koeficient determinácie)</div>
+      <div class="fval">podiel variability Y vysvetlený modelom. Hodnota 0–1.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-green">
+    <span class="ico">✅</span>
+    <div class="content"><strong>Významnosť koeficientu</strong> testujeme pomocou t-testu a p-hodnoty.<br>
+    P &lt; α → premenná je <strong>štatisticky významná</strong>.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 7 ═══════════════════════════ -->
+<section class="section" id="s7">
+  <div class="sec-title"><span class="dot"></span>ČASOVÉ RADY</div>
+
+  <div class="alert alert-blue">
+    <span class="ico">📅</span>
+    <div class="content">
+      <strong>Časový rad</strong> — dvojrozmerný súbor chronologicky usporiadaných dát, ktorý odhaľuje dynamiku zmien. Slúži na <strong>prognózy a analýzu vývoja</strong>.
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card c-blue">
+      <div class="label">TREND (T)</div>
+      <div class="value">Dlhodobý smer vývoja.</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">SEZÓNNOSŤ (S)</div>
+      <div class="value">Opakujúce sa výkyvy do 1 roka.</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">CYKLUS (C)</div>
+      <div class="value">Dlhšie kolísania: 4–11 rokov.</div>
+    </div>
+    <div class="card c-yellow">
+      <div class="label">NÁHODA (I)</div>
+      <div class="value">Okamžité, nepravidelné výkyvy bez pravidiel.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>MODELY ČASOVÉHO RADU</div>
+  <div class="grid-2">
+    <div class="card c-blue">
+      <div class="label">ADITIVNÝ MODEL</div>
+      <div class="formula">Yₜ = Tₜ + Sₜ + Cₜ + Iₜ</div>
+    </div>
+    <div class="card c-purple">
+      <div class="label">MULTIPLIKATÍVNY MODEL</div>
+      <div class="formula">Yₜ = Tₜ × Sₜ × Cₜ × Iₜ</div>
+    </div>
+    <div class="card c-green">
+      <div class="label">NEPERIODICKÝ MODEL</div>
+      <div class="formula">Yᵢ = Tᵢ + Iᵢ</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>UKAZOVATELE DYNAMIKY</div>
+
+  <table class="tbl">
+    <tr><th>Ukazovateľ</th><th>Vzorec</th><th>Popis</th></tr>
+    <tr>
+      <td class="name">Absolútny prírastok</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">Δyₜ = yₜ − y₍ₜ₋₁₎</td>
+      <td>O koľko sa zmenila hodnota</td>
+    </tr>
+    <tr>
+      <td class="name">Koeficient rastu</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">kₜ = yₜ / y₍ₜ₋₁₎</td>
+      <td>Koľkokrát vzrástla hodnota</td>
+    </tr>
+    <tr>
+      <td class="name">Tempo rastu</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">T = (yₜ / y₍ₜ₋₁₎) × 100 %</td>
+      <td>Percentuálny rast</td>
+    </tr>
+    <tr>
+      <td class="name">Tempo prírastku</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">(Δyₜ / y₍ₜ₋₁₎) × 100 %</td>
+      <td>Percentuálna zmena (bez základu)</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════ SECTION 8 ═══════════════════════════ -->
+<section class="section" id="s8">
+  <div class="sec-title"><span class="dot"></span>ZÁKLADY PRAVDEPODOBNOSTI</div>
+
+  <div class="alert alert-blue">
+    <span class="ico">🎲</span>
+    <div class="content">
+      <strong>Pravdepodobnosť javu A</strong> — miera možného výskytu výsledkov náhodného pokusu.<br>
+      m = počet výsledkov, kde A nastane &nbsp;·&nbsp; n = počet všetkých možných výsledkov
+    </div>
+  </div>
+
+  <div class="fgrid">
+    <div class="fcard">
+      <div class="fname">Základný vzorec</div>
+      <div class="fval">P(A) = m / n = fᵢ = nᵢ / n</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>PRAVIDLÁ PRAVDEPODOBNOSTI</div>
+
+  <table class="tbl">
+    <tr><th>Situácia</th><th>Vzorec</th></tr>
+    <tr>
+      <td class="name">Nevylučujúce javy (A alebo B)</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">P(A∪B) = P(A) + P(B) − P(A∩B)</td>
+    </tr>
+    <tr>
+      <td class="name">Vylučujúce javy (A alebo B)</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">P(A∪B) = P(A) + P(B)</td>
+    </tr>
+    <tr>
+      <td class="name">Závislé javy (A a B)</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">P(A∩B) = P(A) · P(B|A)</td>
+    </tr>
+    <tr>
+      <td class="name">Nezávislé javy (A a B)</td>
+      <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent3)">P(A∩B) = P(A) · P(B)</td>
+    </tr>
+  </table>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>NORMÁLNE ROZDELENIE</div>
+
+  <div class="alert alert-green">
+    <span class="ico">🔔</span>
+    <div class="content">
+      <strong>Normálne rozdelenie</strong> — pravdepodobnostné rozdelenie spojitej náhodnej premennej so <strong>symetrickým zvonovitým tvarom</strong>, určené strednou hodnotou μ a rozptylom σ².<br><br>
+      Príklady: výška dospelých mužov, výsledky IQ testov.
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="sec-title"><span class="dot"></span>RÝCHLA REFERENCIA — VÝBER TESTU</div>
+
+  <table class="tbl">
+    <tr><th>Chcem porovnať...</th><th>Parametrický</th><th>Neparametrický</th></tr>
+    <tr><td>1 skupinu s hodnotou</td><td>Jednovzorkový T-test</td><td>—</td></tr>
+    <tr><td>2 nezávislé skupiny</td><td>Dvojvzorkový T-test</td><td>U-test</td></tr>
+    <tr><td>2 závislé skupiny</td><td>Párový T-test</td><td>Wilcoxonov test</td></tr>
+    <tr><td>3+ skupín</td><td>ANOVA + post-hoc</td><td>Kruskal-Wallis</td></tr>
+    <tr><td>Vzťah 2 premenných (čísla)</td><td>Pearsonov r</td><td>Spearmanov rₛ</td></tr>
+    <tr><td>Vzťah 2 kategórií</td><td>Chi-kvadrát test</td><td>—</td></tr>
+    <tr><td>Normalitu dát</td><td>Shapiro-Wilk / Jarque-Bera</td><td>K-S test / χ²</td></tr>
+    <tr><td>Zhodnosť rozptylov</td><td>Leveneov test / F-test</td><td>—</td></tr>
+    <tr><td>Odľahlé hodnoty</td><td>Grubbsov test</td><td>Dixonov test</td></tr>
+  </table>
+</section>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
